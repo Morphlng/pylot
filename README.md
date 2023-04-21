@@ -15,6 +15,76 @@ CARLA simulator and real-world cars.
 
 # Setup instructions
 
+## Modification
+
+In order to make Pylot compatible with Carla 0.9.13 (and hopefully later version), you need to follow this guide:
+
+1. We suggest using `nvidia-docker`, you can install it by running the script `./scripts/install-nvidia-docker.sh`.
+
+  If you already have docker 19.03+ installed,  you can also make it support GPU by installing `nvidia-container-toolkit`.
+  Please refer to [Nvidia's guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#setting-up-nvidia-container-toolkit) to learn more.
+
+2. Pull the latest image：
+   
+  ```bash
+  docker pull erdosproject/pylot:v0.3.3
+  ```
+
+  After pulling the image, use following command to start the container:
+
+  ```bash
+  nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+  ```
+
+3. Pylot has stppped update since 9/30/2021, There is some bug inside `erdosproject/pylot:v0.3.3`, we have made some patches in this repo.
+
+Enter Pylot container using `docker exec -it pylot bash`, and do the following steps：
+
+  - Update `frenet_optimal_trajectory_planner`
+    
+    ```bash
+    cd $PYLOT_HOME/dependencies/
+    mv frenet_optimal_trajectory_planner frenet_optimal_trajectory_planner.bak
+    git clone https://github.com/erdos-project/frenet_optimal_trajectory_planner.git
+    cd frenet_optimal_trajectory_planner/
+    bash build.sh
+    ```
+
+  - Update `DRN`
+    
+    ```bash
+    cd $PYLOT_HOME/dependencies/
+    mv drn drn.bak
+    git clone https://github.com/ICGog/drn.git
+    ```
+
+  - Update `carla client pythonAPI`
+
+    ```bash
+    mv /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg.bak
+    pip install carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
+    ```
+
+  - Update `pylot`
+
+    Move following file inside this repo to replace the file under container:
+    ```bash
+    pylot/component_creator.py
+    pylot/perception/detection/lane.py
+    pylot/perception/detection/lanenet_detection_operator.py
+    pylot/perception/camera_frame.py
+    pylot/simulation/utils.py
+    ```
+
+  - Update Environment variable
+    
+    ```bash
+    echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
+    source ~/.bashrc
+    ```
+
+Now, you can use Pylot follow the original usage.
+
 ## Deploy using Docker
 
 The easiest way to get Pylot running is to use our Docker image. Please ensure
