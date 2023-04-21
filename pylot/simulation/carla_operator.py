@@ -3,6 +3,7 @@ import heapq
 import random
 import threading
 import time
+import redis as redis
 from functools import total_ordering
 
 from carla import Location, VehicleControl, command
@@ -47,6 +48,13 @@ class CarlaOperator(erdos.Operator):
         if flags.random_seed:
             random.seed(flags.random_seed)
         # Register callback on control stream.
+        redis_host ="192.168.50.228"
+        redis_port = 6379
+        #if flags.REDIS_HOST is not None:
+         #   redis_host = flags.REDIS_HOST
+        #if flags.REDIS_PORT is not None:
+         #   redis_port = flags.REDIS_PORT
+        self.conn = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
         control_stream.add_callback(self.on_control_msg)
         erdos.add_watermark_callback([release_sensor_stream], [],
                                      self.on_sensor_ready)
@@ -105,6 +113,7 @@ class CarlaOperator(erdos.Operator):
             self._logger.info("Waiting for the scenario to be ready ...")
             self._ego_vehicle = pylot.simulation.utils.wait_for_ego_vehicle(
                 self._world)
+            self._logger.info("ego vehicle location: {}".format(self._ego_vehicle.get_transform()))
             self._logger.info("Found ego vehicle")
         else:
             # Spawn ego vehicle, people and vehicles.
@@ -162,6 +171,7 @@ class CarlaOperator(erdos.Operator):
 
     @erdos.profile_method()
     def on_control_msg(self, msg: ControlMessage):
+        start_ego_flag = self.conn.get("START_EGO")
         """ Invoked when a ControlMessage is received.
 
         Args:
@@ -179,6 +189,8 @@ class CarlaOperator(erdos.Operator):
             # commands if they must be applied before the next sensor read.
             self._consume_next_event()
         else:
+            if start_ego_flag == '0':
+                self.conn.set("START_EGO", '1')
             # If auto pilot or manual mode is enabled then we do not apply the
             # control, but we still want to tick in this method to ensure that
             # all operators finished work before the world ticks.

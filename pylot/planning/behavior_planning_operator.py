@@ -9,6 +9,11 @@ import pylot.utils
 from pylot.planning.messages import WaypointsMessage
 from pylot.planning.utils import BehaviorPlannerState
 from pylot.planning.waypoints import Waypoints
+import traceback
+import pylot.flags
+from absl import flags
+import sys
+FLAGS = flags.FLAGS
 
 
 class BehaviorPlanningOperator(erdos.Operator):
@@ -61,6 +66,9 @@ class BehaviorPlanningOperator(erdos.Operator):
         else:
             self._route = None
         self._map = None
+        self._client, self._world = pylot.simulation.utils.get_world(FLAGS.simulator_host,
+                                                                     FLAGS.simulator_port,
+                                                                     FLAGS.simulator_timeout)
 
     @staticmethod
     def connect(pose_stream: erdos.ReadStream,
@@ -129,17 +137,27 @@ class BehaviorPlanningOperator(erdos.Operator):
             else:
                 self._route.remove_waypoint_if_close(ego_transform.location, 3)
         new_goal_location = self.__get_goal_location(ego_transform)
+        self._logger.debug('@{}: {} | {} | {}'.format(timestamp, ego_transform, new_goal_location, self._map))
+        if new_goal_location == ego_transform.location:
+            self._logger.debug('@{}: ego has reached the end'.format(timestamp))
+            pylot.simulation.utils.set_asynchronous_mode(self._world)
+            sys.exit(1)
         if new_goal_location != self._goal_location:
             self._goal_location = new_goal_location
             if self._map:
                 # Use the map to compute more fine-grained waypoints.
-                waypoints = self._map.compute_waypoints(
-                    ego_transform.location, self._goal_location)
-                road_options = deque([
-                    pylot.utils.RoadOption.LANE_FOLLOW
-                    for _ in range(len(waypoints))
-                ])
-                waypoints = Waypoints(waypoints, road_options=road_options)
+                try:
+                    waypoints = self._map.compute_waypoints(
+                        ego_transform.location, self._goal_location)
+                    road_options = deque([
+                        pylot.utils.RoadOption.LANE_FOLLOW
+                        for _ in range(len(waypoints))
+                    ])
+                    waypoints = Waypoints(waypoints, road_options=road_options)
+                except Exception:
+                    self._logger.error('@{}: {}'.format(timestamp, traceback.format_exc()))
+                    pylot.simulation.utils.set_asynchronous_mode(self._world)
+                    sys.exit(1)
             else:
                 # Map is not available, send the route.
                 waypoints = self._route

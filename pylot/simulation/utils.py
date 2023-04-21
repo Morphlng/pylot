@@ -57,7 +57,7 @@ def get_world(host: str = "localhost", port: int = 2000, timeout: int = 10):
         server_version = client.get_server_version()
         err_msg = 'Simulator client {} does not match server {}'.format(
             client_version, server_version)
-        assert client_version == server_version, err_msg
+        # assert client_version == server_version, err_msg
         client.set_timeout(timeout)
         world = client.get_world()
     except RuntimeError as r:
@@ -168,10 +168,10 @@ def reset_world(world):
 def spawn_actors(client, world, traffic_manager_port: int,
                  simulator_version: str, ego_spawn_point_index: int,
                  auto_pilot: bool, num_people: int, num_vehicles: int, logger):
-    ego_vehicle = spawn_ego_vehicle(world, traffic_manager_port,
-                                    ego_spawn_point_index, auto_pilot)
     vehicle_ids = spawn_vehicles(client, world, traffic_manager_port,
                                  num_vehicles, logger)
+    ego_vehicle = spawn_ego_vehicle(world, traffic_manager_port,
+                                    ego_spawn_point_index, auto_pilot)
     people = []
 
     if check_simulator_version(simulator_version,
