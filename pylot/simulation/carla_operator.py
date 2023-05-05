@@ -6,7 +6,7 @@ import time
 import redis as redis
 from functools import total_ordering
 
-from carla import Location, VehicleControl, command
+from carla import Location, Rotation, Transform, VehicleControl, command
 
 import erdos
 from erdos import ReadStream, Timestamp, WriteStream
@@ -426,9 +426,9 @@ class CarlaOperator(erdos.Operator):
     def __update_spectactor_pose(self):
         # Set the world simulation view with respect to the vehicle.
         v_pose = self._ego_vehicle.get_transform()
-        v_pose.location -= 10 * Location(v_pose.get_forward_vector())
-        v_pose.location.z = 5
-        self._spectator.set_transform(v_pose)
+        spectator_transform = Transform(Location(v_pose.location.x, v_pose.location.y, v_pose.location.z + 5) - 10 * Location(v_pose.get_forward_vector()),
+                                        Rotation(v_pose.rotation.pitch, v_pose.rotation.yaw, v_pose.rotation.roll))
+        self._spectator.set_transform(spectator_transform)
 
 
 @total_ordering

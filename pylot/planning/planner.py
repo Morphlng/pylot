@@ -25,9 +25,9 @@ class Planner(object):
                 # Use the HD Map to transform a 2D location into a
                 # 3D location.
                 p_loc = self._map.get_closest_lane_waypoint(
-                    Location(x=point[0], y=point[1], z=0)).location
+                    Location(x=point[0], y=point[1], z=self._world.ego_transform.location.z)).location
             else:
-                p_loc = Location(x=point[0], y=point[1], z=0)
+                p_loc = Location(x=point[0], y=point[1], z=self._world.ego_transform.location.z)
             # Use the computed x and y (not the ones returned by the HDMap)
             # to ensure that the vehicles follows the computed plan.
             wps.append(
