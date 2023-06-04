@@ -62,7 +62,8 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
 
     ```bash
     mv /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg.bak
-    pip install carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
+    # You might want to edit the ~/.bashrc file too
+    python -m pip install carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
     ```
 
   - Update `pylot`
