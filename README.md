@@ -70,11 +70,15 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
 
     Move following file inside this repo to replace the file under container:
     ```bash
-    pylot/component_creator.py
-    pylot/perception/detection/lane.py
-    pylot/perception/detection/lanenet_detection_operator.py
-    pylot/perception/camera_frame.py
-    pylot/simulation/utils.py
+    cd ~/workspace
+    mkdir fork_pylot && cd fork_pylot
+    git clone https://github.com/Morphlng/pylot
+   
+    cd ~/workspace/pylot
+    mv pylot pylot.bak
+    cp -R ~/workspace/fork_pylot/pylot ./
+    
+    # You also have to manually update the pylot.py file under the root folder.
     ```
 
   - Update Environment variable
