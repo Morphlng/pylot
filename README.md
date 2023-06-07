@@ -71,14 +71,14 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
     Move following file inside this repo to replace the file under container:
     ```bash
     cd ~/workspace
-    mkdir fork_pylot && cd fork_pylot
-    git clone https://github.com/Morphlng/pylot
+    git clone https://github.com/Morphlng/pylot fork_pylot
    
     cd ~/workspace/pylot
     mv pylot pylot.bak
     cp -R ~/workspace/fork_pylot/pylot ./
     
-    # You also have to manually update the pylot.py file under the root folder.
+    mv pylot.py pylot.py.bak
+    cp ~/workspace/fork_pylot/pylot.py ./
     ```
 
   - Update Environment variable
