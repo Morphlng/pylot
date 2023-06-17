@@ -48,7 +48,7 @@ class CarlaOperator(erdos.Operator):
         if flags.random_seed:
             random.seed(flags.random_seed)
         # Register callback on control stream.
-        redis_host ="192.168.50.228"
+        redis_host ="172.17.0.1"
         redis_port = 6379
         #if flags.REDIS_HOST is not None:
          #   redis_host = flags.REDIS_HOST

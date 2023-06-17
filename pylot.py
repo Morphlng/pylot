@@ -23,7 +23,7 @@ CENTER_CAMERA_LOCATION = pylot.utils.Location(1.3, 0.0, 1.8)
 
 def driver():
     transform = pylot.utils.Transform(CENTER_CAMERA_LOCATION,
-                                      pylot.utils.Rotation(pitch=-15, roll=45))
+                                      pylot.utils.Rotation(pitch=-15))
     streams_to_send_top_on = []
     control_loop_stream = erdos.LoopStream()
     time_to_decision_loop_stream = erdos.LoopStream()
@@ -256,7 +256,9 @@ def main(args):
     # synchronous mode off after the script finishes running.
     client, world = get_world(FLAGS.simulator_host, FLAGS.simulator_port,
                               FLAGS.simulator_timeout)
-    conn = redis.Redis(host="192.168.50.228", port=6379, decode_responses=True)
+    conn = redis.Redis(host="172.17.0.1", port=6379, decode_responses=True)
+    node_handle = None
+    
     try:
         if FLAGS.simulation_recording_file is not None:
             client.start_recorder(FLAGS.simulation_recording_file)
@@ -269,11 +271,14 @@ def main(args):
         conn.set('pylot_ready', "yes")
         node_handle.wait()
     except KeyboardInterrupt:
-        shutdown_pylot(node_handle, client, world)
+        if node_handle is not None:
+            shutdown_pylot(node_handle, client, world)
     except SystemExit:
-        shutdown_pylot(node_handle, client, world)
+        if node_handle is not None:
+            shutdown_pylot(node_handle, client, world)
     except Exception:
-        shutdown_pylot(node_handle, client, world)
+        if node_handle is not None:
+            shutdown_pylot(node_handle, client, world)
         raise
 
 

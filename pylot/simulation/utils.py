@@ -193,8 +193,9 @@ def spawn_ego_vehicle(world,
                       traffic_manager_port: int,
                       spawn_point_index: int,
                       auto_pilot: bool,
-                      blueprint: str = 'vehicle.lincoln.mkz2017'):
+                      blueprint: str = 'vehicle.lincoln.mkz_2017'):
     v_blueprint = world.get_blueprint_library().filter(blueprint)[0]
+    v_blueprint.set_attribute('role_name', 'hero')
     ego_vehicle = None
     while not ego_vehicle:
         if spawn_point_index == -1:

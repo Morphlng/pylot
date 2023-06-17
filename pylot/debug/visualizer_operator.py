@@ -366,6 +366,7 @@ class VisualizerOperator(erdos.Operator):
             if prediction_camera_msg is None:
                 # Top-down prediction is not available. Show planning
                 # world on a black image.
+                # print("prediction_camera_msg is None, showing black_img...")
                 black_img = np.zeros((self._bird_eye_camera_setup.height,
                                       self._bird_eye_camera_setup.width, 3),
                                      dtype=np.dtype("uint8"))
@@ -388,7 +389,10 @@ class VisualizerOperator(erdos.Operator):
             self._planning_world.draw_on_frame(frame)
             frame.visualize(self.display, timestamp=timestamp)
 
-        self.render_text(pose_msg.data, control_msg, timestamp)
+        if pose_msg:
+            self.render_text(pose_msg.data, control_msg, timestamp)
+        else:
+            self.render_text(None, control_msg, timestamp)
 
     def run(self):
         # Run method is invoked after all operators finished initializing.

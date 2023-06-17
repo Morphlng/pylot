@@ -239,20 +239,21 @@ class PlanningOperator(erdos.Operator):
         return predictions
 
     def update_world(self, timestamp: erdos.Timestamp):
-        pose_msg = self._pose_msgs.popleft()
-        ego_transform = pose_msg.data.transform
-        prediction_msg = self._prediction_msgs.popleft()
-        predictions = self.get_predictions(prediction_msg, ego_transform)
-        static_obstacles_msg = self._static_obstacles_msgs.popleft()
-        if len(self._lanes_msgs) > 0:
-            lanes = self._lanes_msgs.popleft().data
-        else:
-            lanes = None
+        if len(self._pose_msgs) > 0:
+            pose_msg = self._pose_msgs.popleft()
+            ego_transform = pose_msg.data.transform
+            prediction_msg = self._prediction_msgs.popleft()
+            predictions = self.get_predictions(prediction_msg, ego_transform)
+            static_obstacles_msg = self._static_obstacles_msgs.popleft()
+            if len(self._lanes_msgs) > 0:
+                lanes = self._lanes_msgs.popleft().data
+            else:
+                lanes = None
 
-        # Update the representation of the world.
-        self._world.update(timestamp,
-                           pose_msg.data,
-                           predictions,
-                           static_obstacles_msg.obstacles,
-                           hd_map=self._map,
-                           lanes=lanes)
+            # Update the representation of the world.
+            self._world.update(timestamp,
+                            pose_msg.data,
+                            predictions,
+                            static_obstacles_msg.obstacles,
+                            hd_map=self._map,
+                            lanes=lanes)

@@ -156,11 +156,37 @@ class Obstacle(object):
                            self.bounding_box_2D.get_max_point(), color)
             frame.draw_text(self.bounding_box_2D.get_min_point(), text, color)
         elif isinstance(self.bounding_box, BoundingBox3D):
-            if self.bounding_box.corners is None:
-                raise ValueError(
-                    'Obstacle {} does not have bbox corners'.format(self.id))
+            # if self.bounding_box.corners is None:
+            #     raise ValueError(
+            #         'Obstacle {} does not have bbox corners'.format(self.id))
+            
+            # rotation yaw
+            c, s = np.cos(self.transform.rotation.yaw), np.sin(self.transform.rotation.yaw)
+
+            R = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]], dtype=np.float32)
+
+            # extent
+            l, w, h = self.bounding_box.extent.x, self.bounding_box.extent.y, self.bounding_box.extent.z
+
+            x_corners = [
+                l / 2, l / 2, -l / 2, -l / 2, l / 2, l / 2, -l / 2, -l / 2
+            ]
+
+            y_corners = [0, 0, 0, 0, -h, -h, -h, -h]
+
+            z_corners = [
+                w / 2, -w / 2, -w / 2, w / 2, w / 2, -w / 2, -w / 2, w / 2
+            ]
+
+            corners = np.array([x_corners, y_corners, z_corners], dtype=np.float32)
+            corners_3d = np.dot(R, corners).transpose(1, 0)
+
+            # location
+            corners_3d = corners_3d + np.array([self.transform.location.x, self.transform.location.y, self.transform.location.z], dtype=np.float32).reshape(1, 3)
+            self.bounding_box.corners = corners_3d
+            
             corners = self.bounding_box.to_camera_view(
-                None, frame.camera_setup.get_extrinsic_matrix(),
+                ego_transform, frame.camera_setup.get_extrinsic_matrix(),
                 frame.camera_setup.get_intrinsic_matrix())
             frame.draw_3d_box(corners, color)
         else:

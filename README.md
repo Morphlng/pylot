@@ -27,7 +27,7 @@ In order to make Pylot compatible with Carla 0.9.13 (and hopefully later version
 2. Pull the latest image：
    
   ```bash
-  docker pull erdosproject/pylot:v0.3.3
+  docker pull erdosproject/pylot:latest
   ```
 
   After pulling the image, use following command to start the container:
@@ -36,7 +36,11 @@ In order to make Pylot compatible with Carla 0.9.13 (and hopefully later version
   nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
   ```
 
-3. Pylot has stppped update since 9/30/2021, There is some bug inside `erdosproject/pylot:v0.3.3`, we have made some patches in this repo.
+  > Note that, if you are using docker-ce instead, please make sure to create the container with GPU, i.e.:
+  >
+  > `docker run -itd --gpus all --name pylot -p 20022:22 erdosproject/pylot /bin/bash`
+
+3. Pylot has stppped update since 9/30/2021, There is some bug inside `erdosproject/pylot:latest`, we have made some patches in this repo.
 
 Enter Pylot container using `docker exec -it pylot bash`, and do the following steps：
 
@@ -76,6 +80,9 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
     cd ~/workspace/pylot
     mv pylot pylot.bak
     cp -R ~/workspace/fork_pylot/pylot ./
+
+    mv configs configs.bak
+    cp -R ~/workspace/fork_pylot/configs ./
     
     mv pylot.py pylot.py.bak
     cp ~/workspace/fork_pylot/pylot.py ./
@@ -133,7 +140,7 @@ Finally, ssh into the container with X forwarding:
 ```console
 ssh -p 20022 -X erdos@localhost
 cd /home/erdos/workspace/pylot/
-python3 pylot.py --flagfile=configs/detection.conf --visualize_detected_obstacles
+python3 pylot.py --flagfile=configs/detection.conf --visualize_detected_obstacles --simulator_host=172.17.0.1
 ```
 
 If everything worked ok, you should be able to see a visualization like
