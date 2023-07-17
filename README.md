@@ -67,7 +67,7 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
     ```bash
     mv /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg.bak
     # You might want to edit the ~/.bashrc file too
-    python -m pip install carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
+    python -m pip install reids carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
     ```
 
   - Update `pylot`
@@ -94,36 +94,17 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
     echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
     source ~/.bashrc
     ```
+  
+  - Deploy a redis server
+  
+    We use redis to synchronize Pylot and other component. By default, we assume the redis server is started on the same host as pylot, so the in the code `pylot.py` the redis_host is set to "172.17.0.1" (localhost in docker environment). If you don't need this utility, remove or edit related logic in both [pylot.py](./pylot.py) and [carla_operator.py](./pylot/simulation/carla_operator.py)
+
+    ```bash
+    docker pull redis:latest
+    docker run -itd --name redis -p 6379:6379 redis
+    ```
 
 Now, you can use Pylot follow the original usage.
-
-## Deploy using Docker
-
-The easiest way to get Pylot running is to use our Docker image. Please ensure
-you have `nvidia-docker` on your machine before you start installing Pylot.
-In case you do not have `nvidia-docker` please
-run ```./scripts/install-nvidia-docker.sh```
-
-We provide a Docker image with both Pylot and CARLA already setup.
-
-```console
-docker pull erdosproject/pylot
-nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
-```
-
-Following, start the simulator in the container:
-
-```console
-nvidia-docker exec -i -t pylot /home/erdos/workspace/pylot/scripts/run_simulator.sh
-```
-
-Finally, start Pylot in the container:
-
-```console
-nvidia-docker exec -i -t pylot /bin/bash
-cd ~/workspace/pylot/
-python3 pylot.py --flagfile=configs/detection.conf
-```
 
 ## Visualizing components
 In case you desire to visualize outputs of different components (e.g., bounding boxes),
@@ -138,6 +119,7 @@ nvidia-docker exec -i -t pylot sudo service ssh start
 
 Finally, ssh into the container with X forwarding:
 ```console
+// Start Carla Server on your host, then:
 ssh -p 20022 -X erdos@localhost
 cd /home/erdos/workspace/pylot/
 python3 pylot.py --flagfile=configs/detection.conf --visualize_detected_obstacles --simulator_host=172.17.0.1
