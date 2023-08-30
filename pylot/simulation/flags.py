@@ -5,6 +5,8 @@ from absl import flags
 ######################################################################
 flags.DEFINE_string('simulator_host', 'localhost', 'Simulator host.')
 flags.DEFINE_integer('simulator_port', 2000, 'Simulator port.')
+flags.DEFINE_string('redis_host', '172.17.0.1', 'Redis server host.')
+flags.DEFINE_integer('redis_port', 6379, 'Redis server port.')
 flags.DEFINE_integer('carla_traffic_manager_port', 8000,
                      'CARLA traffic manager port.')
 flags.DEFINE_integer('simulator_timeout', 10,

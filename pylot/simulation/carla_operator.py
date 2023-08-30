@@ -47,14 +47,10 @@ class CarlaOperator(erdos.Operator):
             global_trajectory_stream: WriteStream, flags):
         if flags.random_seed:
             random.seed(flags.random_seed)
+        
+        self.redis = redis.Redis(host=flags.redis_host, port=flags.redis_port, decode_responses=True)
+        
         # Register callback on control stream.
-        redis_host ="172.17.0.1"
-        redis_port = 6379
-        #if flags.REDIS_HOST is not None:
-         #   redis_host = flags.REDIS_HOST
-        #if flags.REDIS_PORT is not None:
-         #   redis_port = flags.REDIS_PORT
-        self.conn = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
         control_stream.add_callback(self.on_control_msg)
         erdos.add_watermark_callback([release_sensor_stream], [],
                                      self.on_sensor_ready)
@@ -171,12 +167,13 @@ class CarlaOperator(erdos.Operator):
 
     @erdos.profile_method()
     def on_control_msg(self, msg: ControlMessage):
-        start_ego_flag = self.conn.get("START_EGO")
         """ Invoked when a ControlMessage is received.
 
         Args:
             msg: A control.messages.ControlMessage message.
         """
+        start_ego_flag = self.redis.get("START_EGO")
+        
         self._logger.debug('@{}: received control message'.format(
             msg.timestamp))
         if self._flags.simulator_mode == 'pseudo-asynchronous':
@@ -190,7 +187,7 @@ class CarlaOperator(erdos.Operator):
             self._consume_next_event()
         else:
             if start_ego_flag == '0':
-                self.conn.set("START_EGO", '1')
+                self.redis.set("START_EGO", '1')
             # If auto pilot or manual mode is enabled then we do not apply the
             # control, but we still want to tick in this method to ensure that
             # all operators finished work before the world ticks.
@@ -345,7 +342,11 @@ class CarlaOperator(erdos.Operator):
                 or self._flags.simulator_mode == 'asynchronous'):
             # No need to tick when running in these modes.
             return
+
+        while self.redis.get("tick") != "1":
+            time.sleep(0.01)
         self._world.tick()
+        self.redis.set("tick", "0")
 
     def _tick_simulator_until(self, goal_time: int):
         while True:
