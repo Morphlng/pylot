@@ -17,6 +17,8 @@ flags.DEFINE_enum('simulator_mode', 'synchronous', [
 ], 'Sets the way in which to run the simulator')
 flags.DEFINE_bool('scenario_runner', False,
                   'Set to True to execute pylot with scenario runner.')
+flags.DEFINE_bool('follow_ego_view', False,
+                  'Set to True to set spectator to follow ego on every tick.')
 flags.DEFINE_integer('simulator_town', 1,
                      'Sets which simulator town to use. Options [1..7]')
 flags.DEFINE_integer('simulator_fps',

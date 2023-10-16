@@ -34,6 +34,7 @@ class CarlaOperator(erdos.Operator):
         _world: A handle to the world running inside the simulation.
         _vehicles: A list of identifiers of the vehicles inside the simulation.
     """
+
     def __init__(
             self, control_stream: ReadStream,
             release_sensor_stream: ReadStream,
@@ -47,9 +48,9 @@ class CarlaOperator(erdos.Operator):
             global_trajectory_stream: WriteStream, flags):
         if flags.random_seed:
             random.seed(flags.random_seed)
-        
+
         self.redis = redis.Redis(host=flags.redis_host, port=flags.redis_port, decode_responses=True)
-        
+
         # Register callback on control stream.
         control_stream.add_callback(self.on_control_msg)
         erdos.add_watermark_callback([release_sensor_stream], [],
@@ -107,8 +108,7 @@ class CarlaOperator(erdos.Operator):
         if self._flags.scenario_runner or self._flags.control == "manual":
             # Wait until the ego vehicle is spawned by the scenario runner.
             self._logger.info("Waiting for the scenario to be ready ...")
-            self._ego_vehicle = pylot.simulation.utils.wait_for_ego_vehicle(
-                self._world)
+            self._ego_vehicle = pylot.simulation.utils.wait_for_ego_vehicle(self._world)
             self._logger.info("ego vehicle location: {}".format(self._ego_vehicle.get_transform()))
             self._logger.info("Found ego vehicle")
         else:
@@ -172,21 +172,16 @@ class CarlaOperator(erdos.Operator):
         Args:
             msg: A control.messages.ControlMessage message.
         """
-        start_ego_flag = self.redis.get("START_EGO")
-        
-        self._logger.debug('@{}: received control message'.format(
-            msg.timestamp))
+        self._logger.debug('@{}: received control message'.format(msg.timestamp))
         if self._flags.simulator_mode == 'pseudo-asynchronous':
-            heapq.heappush(
-                self._tick_events,
-                (msg.timestamp.coordinates[0], TickEvent.CONTROL_CMD))
+            heapq.heappush(self._tick_events, (msg.timestamp.coordinates[0], TickEvent.CONTROL_CMD))
             self._control_msgs[msg.timestamp.coordinates[0]] = msg
             # Tick until the next sensor read game time to ensure that the
             # data-flow has a new round of sensor inputs. Apply control
             # commands if they must be applied before the next sensor read.
             self._consume_next_event()
         else:
-            if start_ego_flag == '0':
+            if self.redis.get("START_EGO") == '0':
                 self.redis.set("START_EGO", '1')
             # If auto pilot or manual mode is enabled then we do not apply the
             # control, but we still want to tick in this method to ensure that
@@ -342,11 +337,7 @@ class CarlaOperator(erdos.Operator):
                 or self._flags.simulator_mode == 'asynchronous'):
             # No need to tick when running in these modes.
             return
-
-        while self.redis.get("tick") != "1":
-            time.sleep(0.01)
         self._world.tick()
-        self.redis.set("tick", "0")
 
     def _tick_simulator_until(self, goal_time: int):
         while True:
@@ -425,11 +416,12 @@ class CarlaOperator(erdos.Operator):
         self.global_trajectory_stream.send(top_watermark)
 
     def __update_spectactor_pose(self):
-        # Set the world simulation view with respect to the vehicle.
-        v_pose = self._ego_vehicle.get_transform()
-        spectator_transform = Transform(Location(v_pose.location.x, v_pose.location.y, v_pose.location.z + 5) - 10 * Location(v_pose.get_forward_vector()),
-                                        Rotation(v_pose.rotation.pitch, v_pose.rotation.yaw, v_pose.rotation.roll))
-        self._spectator.set_transform(spectator_transform)
+        if self._flags.follow_ego_view:
+            # Set the world simulation view with respect to the vehicle.
+            v_pose = self._ego_vehicle.get_transform()
+            spectator_transform = Transform(Location(v_pose.location.x, v_pose.location.y, v_pose.location.z + 5) - 10 * Location(v_pose.get_forward_vector()),
+                                            Rotation(v_pose.rotation.pitch, v_pose.rotation.yaw, v_pose.rotation.roll))
+            self._spectator.set_transform(spectator_transform)
 
 
 @total_ordering

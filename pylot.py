@@ -11,7 +11,6 @@ import pylot.utils
 from pylot.drivers.sensor_setup import DepthCameraSetup, RGBCameraSetup, \
     SegmentedCameraSetup
 from pylot.simulation.utils import get_world, set_asynchronous_mode
-import redis
 
 FLAGS = flags.FLAGS
 
@@ -256,7 +255,6 @@ def main(args):
     # synchronous mode off after the script finishes running.
     client, world = get_world(FLAGS.simulator_host, FLAGS.simulator_port,
                               FLAGS.simulator_timeout)
-    conn = redis.Redis(host="172.17.0.1", port=6379, decode_responses=True)
     node_handle = None
     
     try:
@@ -267,8 +265,6 @@ def main(args):
         signal.signal(signal.SIGTERM, shutdown)
         if pylot.flags.must_visualize():
             pylot.utils.run_visualizer_control_loop(control_display_stream)
-        # set redis
-        conn.set('pylot_ready', "yes")
         node_handle.wait()
     except KeyboardInterrupt:
         if node_handle is not None:
