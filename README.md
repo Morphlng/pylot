@@ -33,14 +33,23 @@ In order to make Pylot compatible with Carla 0.9.13 (and hopefully later version
   After pulling the image, use following command to start the container:
 
   ```bash
-  nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+  # host network
+  nvidia-docker run -itd --name pylot --net host erdosproject/pylot /bin/bash
+  
+  # bridge network
+  # nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
   ```
 
   > Note that, if you are using docker-ce instead, please make sure to create the container with GPU, i.e.:
   >
-  > `docker run -itd --gpus all --name pylot -p 20022:22 erdosproject/pylot /bin/bash`
+  > ```bash
+  > # host network
+  > docker run -itd --gpus all --name pylot -net host erdosproject/pylot /bin/bash
+  > # bridge network
+  > # docker run -itd --gpus all --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+  > ```
 
-3. Pylot has stppped update since 9/30/2021, There is some bug inside `erdosproject/pylot:latest`, we have made some patches in this repo.
+1. Pylot has stppped update since 9/30/2021, There is some bug inside `erdosproject/pylot:latest`, we have made some patches in this repo.
 
 Enter Pylot container using `docker exec -it pylot bash`, and do the following steps：
 
@@ -67,7 +76,7 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
     ```bash
     mv /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg /home/erdos/workspace/pylot/dependencies/CARLA_0.9.10.1/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg.bak
     # You might want to edit the ~/.bashrc file too
-    python -m pip install redis carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
+    python3 -m pip install redis carla==0.9.13 -i "http://pypi.douban.com/simple/" --trusted-host "pypi.douban.com"
     ```
 
   - Update `pylot`
@@ -97,7 +106,7 @@ Enter Pylot container using `docker exec -it pylot bash`, and do the following s
   
   - Deploy a redis server
   
-    We use redis to synchronize Pylot and other component. By default, we assume the redis server is started on the same host as pylot, so the in the code `pylot.py` the redis_host is set to "172.17.0.1" (localhost in docker environment). If you don't need this utility, remove or edit related logic in both [pylot.py](./pylot.py) and [carla_operator.py](./pylot/simulation/carla_operator.py)
+    We use redis to synchronize Pylot and other component. By default, we assume the redis server is started on the same host as pylot, so the in the code `pylot.py` the redis_host is set to "172.17.0.1" (localhost in docker environment when using bridge network). If you don't need this utility, remove or edit related logic in both [pylot.py](./pylot.py) and [carla_operator.py](./pylot/simulation/carla_operator.py)
 
     ```bash
     docker pull redis:latest
