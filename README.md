@@ -33,20 +33,21 @@ In order to make Pylot compatible with Carla 0.9.13 (and hopefully later version
   After pulling the image, use following command to start the container:
 
   ```bash
-  # host network
-  nvidia-docker run -itd --name pylot --net host erdosproject/pylot /bin/bash
-  
   # bridge network
-  # nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+  nvidia-docker run -itd --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+
+  # host network (possibly buggy)
+  # nvidia-docker run -itd --name pylot --net host erdosproject/pylot /bin/bash
   ```
 
   > Note that, if you are using docker-ce instead, please make sure to create the container with GPU, i.e.:
   >
   > ```bash
-  > # host network
-  > docker run -itd --gpus all --name pylot -net host erdosproject/pylot /bin/bash
   > # bridge network
-  > # docker run -itd --gpus all --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+  > docker run -itd --gpus all --name pylot -p 20022:22 erdosproject/pylot /bin/bash
+  >
+  > # host network
+  > # docker run -itd --gpus all --name pylot -net host erdosproject/pylot /bin/bash
   > ```
 
 1. Pylot has stppped update since 9/30/2021, There is some bug inside `erdosproject/pylot:latest`, we have made some patches in this repo.

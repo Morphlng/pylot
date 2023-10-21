@@ -100,9 +100,9 @@ class PylotManager:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ue_host', type=str, default='127.0.0.1')
+    parser.add_argument('--ue_host', type=str, default='172.17.0.1')
     parser.add_argument('--ue_port', type=int, default=2000)
-    parser.add_argument('--redis_host', type=str, default='127.0.0.1')
+    parser.add_argument('--redis_host', type=str, default='172.17.0.1')
     parser.add_argument('--redis_port', type=int, default=6379)
     parser.add_argument('--map', type=str, default='Town01')
     parser.add_argument('--flagfile', type=str, default='/home/erdos/workspace/pylot/configs/scenarios/person_avoidance_frenet.conf')
