@@ -70,9 +70,10 @@ class Obstacle(object):
             :py:class:`.Obstacle`: An obstacle instance.
         """
         from carla import Vehicle, Walker
-        if not isinstance(actor, (Vehicle, Walker)):
-            raise ValueError("The actor should be of type Vehicle or "
-                             "Walker to initialize the Obstacle class.")
+        # if not isinstance(actor, (Vehicle, Walker)):
+        #     raise ValueError("The actor should be of type Vehicle or "
+        #                      "Walker to initialize the Obstacle class.")
+        
         # We do not use everywhere from_simulator* methods in order to reduce
         # runtime.
         # Convert the transform provided by the simulation to the Pylot class.
@@ -83,8 +84,11 @@ class Obstacle(object):
             actor.bounding_box)
         if isinstance(actor, Vehicle):
             label = 'vehicle'
-        else:
+        elif isinstance(actor, Walker):
             label = 'person'
+        else:
+            label = 'obstacle'
+
         # Get the simulator actor from type_id (e.g. vehicle.ford.mustang).
         detailed_label = actor.type_id
         # TODO (Sukrit): Move from vehicles and people to separate classes
@@ -277,6 +281,9 @@ class Obstacle(object):
 
     def is_person(self):
         return self.label == 'person'
+
+    def is_obstacle(self):
+        return self.label == 'obstacle'
 
     def is_speed_limit(self):
         return self.label in [

@@ -180,13 +180,13 @@ class ERDOSBaseAgent(AutonomousAgent):
             return
         from pylot.simulation.utils import extract_data_in_pylot_format
         actor_list = self._world.get_actors()
-        (vehicles, people, traffic_lights, _,
+        (vehicles, people, obstacles, traffic_lights, _,
          _) = extract_data_in_pylot_format(actor_list)
         if (FLAGS.simulator_obstacle_detection
                 or FLAGS.evaluate_obstacle_detection
                 or FLAGS.evaluate_obstacle_tracking):
             perfect_obstacles_stream.send(
-                ObstaclesMessage(timestamp, vehicles + people))
+                ObstaclesMessage(timestamp, vehicles + people + obstacles))
             perfect_obstacles_stream.send(erdos.WatermarkMessage(timestamp))
         if FLAGS.simulator_traffic_light_detection:
             vec_transform = pylot.utils.Transform.from_simulator_transform(

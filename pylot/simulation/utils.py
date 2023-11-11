@@ -372,6 +372,11 @@ def extract_data_in_pylot_format(actor_list):
         Obstacle.from_simulator_actor(ped_actor) for ped_actor in person_actors
     ]
 
+    dynamic_obstacles = actor_list.filter('dynamic.prop.*')
+    obstacles = [
+        Obstacle.from_simulator_actor(obs_actor) for obs_actor in dynamic_obstacles
+    ]
+
     tl_actors = actor_list.filter('traffic.traffic_light*')
     traffic_lights = [
         TrafficLight.from_simulator_actor(tl_actor) for tl_actor in tl_actors
@@ -389,7 +394,7 @@ def extract_data_in_pylot_format(actor_list):
         for ts_actor in traffic_stop_actors
     ]
 
-    return (vehicles, people, traffic_lights, speed_limits, traffic_stops)
+    return (vehicles, people, obstacles, traffic_lights, speed_limits, traffic_stops)
 
 
 def draw_trigger_volume(world, actor):

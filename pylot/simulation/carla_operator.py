@@ -374,12 +374,12 @@ class CarlaOperator(erdos.Operator):
         # Get all the actors in the simulation.
         actor_list = self._world.get_actors()
 
-        (vehicles, people, traffic_lights, speed_limits, traffic_stops
+        (vehicles, people, obstacles, traffic_lights, speed_limits, traffic_stops
          ) = pylot.simulation.utils.extract_data_in_pylot_format(actor_list)
 
         # Send ground people and vehicles.
         self.ground_obstacles_stream.send(
-            ObstaclesMessage(timestamp, vehicles + people))
+            ObstaclesMessage(timestamp, vehicles + people + obstacles))
         self.ground_obstacles_stream.send(erdos.WatermarkMessage(timestamp))
         # Send ground traffic lights.
         self.ground_traffic_lights_stream.send(
