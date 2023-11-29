@@ -257,6 +257,7 @@ class World(object):
         speed_factor_p = 1
         speed_factor_v = 1
         speed_factor_stop = 1
+        speed_factor_intersection = 1
 
         try:
             self.waypoints.remove_completed(self.ego_transform.location)
@@ -317,6 +318,9 @@ class World(object):
                         and self._distance_since_last_full_stop > 13):
                     speed_factor_stop = 0
 
+        if self._map.is_intersection(self.ego_transform.location):
+            speed_factor_intersection = 0.7
+
         speed_factor = min(speed_factor_tl, speed_factor_p, speed_factor_v,
                            speed_factor_stop)
         self._logger.debug(
@@ -324,7 +328,7 @@ class World(object):
             ' stop {}'.format(timestamp, speed_factor_p, speed_factor_v,
                               speed_factor_tl, speed_factor_stop))
         return (speed_factor, speed_factor_p, speed_factor_v, speed_factor_tl,
-                speed_factor_stop)
+                speed_factor_stop, speed_factor_intersection)
 
     def stop_traffic_light(self, tl, wp_vector, wp_angle) -> float:
         """Computes a stopping factor for ego vehicle given a traffic light.

@@ -197,7 +197,7 @@ class PlanningOperator(erdos.Operator):
         #     output_wps = self._planner.run(timestamp, ttd)
         # else:
         (speed_factor, _, _, speed_factor_tl,
-         speed_factor_stop) = self._world.stop_for_agents(timestamp)
+         speed_factor_stop, speed_factor_intersection) = self._world.stop_for_agents(timestamp)
         if self._flags.planning_type == 'waypoint':
             target_speed = speed_factor * self._flags.target_speed
             self._logger.debug(
@@ -206,7 +206,7 @@ class PlanningOperator(erdos.Operator):
             output_wps = self._world.follow_waypoints(target_speed)
         else:
             output_wps = self._planner.run(timestamp, ttd)
-            speed_factor = min(speed_factor_stop, speed_factor_tl)
+            speed_factor = min(speed_factor_stop, min(speed_factor_tl, speed_factor_intersection))
             self._logger.debug('@{}: speed factor: {}'.format(
                 timestamp, speed_factor))
             output_wps.apply_speed_factor(speed_factor)
